@@ -31,4 +31,8 @@ sequelize seed:generate --name demo-user
 -- Run all seeds
 sequelize db:seed:all
 
+-- Reset de database table
+sequelize db:migrate:undo:all
+sequelize db:migrate
+
  */
