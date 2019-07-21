@@ -22,29 +22,38 @@
       <div class="row">
         <div class="col-sm-12 col-md-7 text-center mt-5">
           <table class="table table-striped">
-            <!-- <thead class="thead-light"> -->
             <tr>
               <th scope="col">#</th>
               <th scope="col">First name</th>
               <th scope="col">Last name</th>
               <th scope="col">Email</th>
+              <th scope="col">Action</th>
             </tr>
-            <!-- </thead> -->
-            <!-- <tbody> -->
+
             <% if(users) {for(var i=0; i < users.length; i++) { %>
-            <tr>
-              <th scope="row"><%=i+1%></th>
-              <td><%= users[i].firstName %></td>
-              <td><%= users[i].lastName %></td>
-              <td><%= users[i].email %></td>
-            </tr>
+              <tr>
+                <th scope="row"><%= i+1 %></th>
+                <td><%= users[i].firstName %></td>
+                <td><%= users[i].lastName %></td>
+                <td><%= users[i].email %></td>
+                <td>
+                  <button type="submit" class="btn btn-success btn-sm" onclick="updateUser(<%= users[i].id %>, '<%= users[i].firstName %>', '<%= users[i].lastName %>', '<%= users[i].email %>' ) ">Edit</button>
+
+                  <form action="/users/delete" method="post" class="d-inline">
+                    <input type="hidden" value="<%= users[i].id; %>" name="id" />
+                    <button type="submit" class="btn btn-danger btn-sm">Del</button>
+                  </form>
+                </td>
+              </tr>
             <% }}; %>
-            <!-- </tbody> -->
+            
           </table>
 
           <% if(error) { %>
             <div class="alert alert-warning alert-dismissible fade show" role="alert">
-              <strong>Sorry!</strong> We had a problem to consult the required information, please <strong><a href="/users" class="text-secondary">try again</a></strong> later.
+              <strong>Sorry!</strong> We had a problem to consult the required information, please
+              <strong><a href="/users" class="text-secondary">try again</a></strong>later.
+
               <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
@@ -54,8 +63,8 @@
 
         <div class="col-sm-12 col-md-5 mt-5">
           <div class="card">
-            <form action="/users/add" method="POST" class="card-body">
-              <h3 class="card-title">Add a new user</h3>
+            <form action="/users/add" method="POST" class="card-body" id="form">
+              <h3 class="card-title" id="form-title">Add a new user</h3>
 
               <% if(addStatus === 'fail') { %>
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -66,37 +75,26 @@
                 </div>
               <% }; %>
 
+              <input type="hidden" value="" name="id" />
+
               <div class="form-group mt-4">
-                <input
-                  type="text"
-                  name="firstName"
-                  class="form-control"
-                  placeholder="First name"
-                  required
-                  autofocus
-                />
+                <input type="text" name="firstName" class="form-control" placeholder="First name" required autofocus />
               </div>
+
               <div class="form-group">
-                <input
-                  type="text"
-                  name="lastName"
-                  class="form-control"
-                  placeholder="Last name"
-                  required
-                  autofocus
-                />
+                <input type="text" name="lastName" class="form-control" placeholder="Last name" required autofocus />
               </div>
+
               <div class="form-group">
-                <input
-                  type="email"
-                  name="email"
-                  class="form-control"
-                  placeholder="Email"
-                  autofocus
-                />
+                <input type="email" name="email" class="form-control" placeholder="Email" autofocus />
+              </div>
+              
+              <div class="form-group mt-4">
+                <input type="submit" value="ADD USER" class="btn btn-primary" name="btnAdd" />
               </div>
               <div class="form-group mt-4">
-                <input type="submit" value="ADD USER" class="btn btn-primary" />
+                <input type="submit" value="SAVE" class="btn btn-success d-none" name="btnUpdate" />
+                <input type="reset" value="CANCEL" class="btn btn-secondary d-none" name="btnCancel" onclick="removeUpdateUser()" />
               </div>
             </form>
           </div>
@@ -104,8 +102,53 @@
       </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"
+    ></script>
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script> -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      form = document.getElementById('form');
+      formTitle = document.getElementById('form-title');
+
+      function updateUser( id, firstName, lastName, email ) {
+        form.action = '/users/update';
+        
+        formTitle.innerText = 'Edit User';
+        formTitle.style.color = 'green';
+        
+        form.btnAdd.classList.remove('d-block');
+        form.btnAdd.classList.add('d-none');
+        form.btnUpdate.classList.remove('d-none');
+        form.btnCancel.classList.remove('d-none');
+        form.btnUpdate.classList.add('d-inline');
+        form.btnCancel.classList.add('d-inline');
+
+        form.firstName.value = firstName;
+        form.lastName.value = lastName;
+        form.email.value = email;
+        form.id.value = id;
+      }
+
+      function removeUpdateUser( ) {
+        form.action = '/users/add';
+        
+        formTitle.innerText = 'Add a new user';
+        formTitle.style.color = 'black';
+        
+        form.btnAdd.classList.remove('d-none');
+        form.btnAdd.classList.add('d-block');
+        form.btnUpdate.classList.remove('d-inline');
+        form.btnCancel.classList.remove('d-inline');
+        form.btnUpdate.classList.add('d-none');
+        form.btnCancel.classList.add('d-none');
+      }
+    </script>
   </body>
 </html>
