@@ -2,26 +2,35 @@ import db from '../../db/models/index';
 
 export default app => {
   app.get('/users', (req, res) => {
-    //Find all elements from db and send them to the view
+    // Find all elements from db and send them to the view
+    // This route also get data from user/add redirect
 
     /* res.render('home/home'); */
     /* db.User.findAll().then(users => {
       const id = users[0].id;
       res.json(users);
     }); */
+
+    const addStatus = req.query.addStatus;
+
     db.User.findAll({ raw: true })
       .then(users => {
         res.render('home/home', {
-          users
+          users,
+          addStatus
         });
       })
       .catch(err => {
-        res.status(500).send('Connection refused');
+        res.status(500).render('home/home', {
+          users: null,
+          addStatus,
+          error: 'db-connection-refused',
+        });
       });
   });
 
   app.post('/users/add', (req, res) => {
-    // Create an user
+    // Create an user, if it fails, sends fail state to /users
 
     db.User.create(req.body)
       .then(result => {
@@ -33,7 +42,12 @@ export default app => {
         res.redirect('/users');
       })
       .catch(err => {
-        res.status(500).send('Connection refused');
+        /* res.status(500).render('home/home', {
+          users: null,
+          error: 'connection refused'
+        }); */
+        const addStatus = encodeURIComponent('fail');
+        res.redirect('/users/?addStatus=' + addStatus);
       });
   });
 };
